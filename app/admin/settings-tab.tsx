@@ -32,45 +32,85 @@ export default function SettingsTab({ onImported }: { onImported: () => void }) 
     try {
       const buf = await file.arrayBuffer();
       const wb = XLSX.read(buf, { type: "array" });
-      const sheetName = wb.SheetNames[0];
-      if (!sheetName) throw new Error("Geen tabblad gevonden");
-      const sheet = wb.Sheets[sheetName];
-      const rows = XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1, blankrows: false });
+      if (!wb.SheetNames.length) throw new Error("Geen tabbladen gevonden in dit bestand");
 
-      if (rows.length < 2) throw new Error("Excel bevat geen data-rijen");
+      // Zoek álle cellen in álle tabbladen die naar email-adressen lijken,
+      // en de buurcellen (links of rechts) als kandidaat voor de naam.
+      type Found = { name: string; email: string; sheet: string };
+      const found: Found[] = [];
+      const sheetsScanned: string[] = [];
 
-      const headers = (rows[0] as any[]).map((c) => String(c ?? ""));
-      const nameIdx = findColumn(headers, ["naam", "name", "voornaam"]);
-      const emailIdx = findColumn(headers, ["email", "e-mail", "mail"]);
+      for (const sheetName of wb.SheetNames) {
+        const sheet = wb.Sheets[sheetName];
+        if (!sheet) continue;
+        sheetsScanned.push(sheetName);
 
-      if (nameIdx < 0 || emailIdx < 0) {
-        // Fallback: gebruik kolom A en B
-        const fallback: Row[] = [];
+        const rows = XLSX.utils.sheet_to_json<any[]>(sheet, {
+          header: 1,
+          blankrows: false,
+          defval: "",
+          raw: false,
+        });
+        if (!rows.length) continue;
+
+        // Probeer eerst headers te herkennen
+        const firstRow = (rows[0] as any[]).map((c) => String(c ?? ""));
+        const nameIdx = findColumn(firstRow, ["naam", "name", "voornaam", "medewerker"]);
+        const emailIdx = findColumn(firstRow, ["email", "e-mail", "mail"]);
+
+        if (nameIdx >= 0 && emailIdx >= 0) {
+          for (let i = 1; i < rows.length; i++) {
+            const r = rows[i] as any[];
+            const name = String(r?.[nameIdx] ?? "").trim();
+            const email = String(r?.[emailIdx] ?? "").trim();
+            if (name && email && email.includes("@")) {
+              found.push({ name, email, sheet: sheetName });
+            }
+          }
+          continue;
+        }
+
+        // Geen headers herkend → scan alle cellen op email-adressen
         for (let i = 0; i < rows.length; i++) {
           const r = rows[i] as any[];
-          const a = String(r?.[0] ?? "").trim();
-          const b = String(r?.[1] ?? "").trim();
-          if (!a || !b) continue;
-          if (i === 0 && !b.includes("@")) continue; // skip header rij
-          fallback.push({ name: a, email: b });
+          if (!Array.isArray(r)) continue;
+          for (let j = 0; j < r.length; j++) {
+            const cell = String(r[j] ?? "").trim();
+            if (!cell.includes("@") || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cell)) continue;
+            // Naam = eerste niet-lege buurcel: links eerst, anders rechts
+            let name = "";
+            for (let k = j - 1; k >= 0; k--) {
+              const v = String(r[k] ?? "").trim();
+              if (v) { name = v; break; }
+            }
+            if (!name) {
+              for (let k = j + 1; k < r.length; k++) {
+                const v = String(r[k] ?? "").trim();
+                if (v && !v.includes("@")) { name = v; break; }
+              }
+            }
+            if (name) found.push({ name, email: cell, sheet: sheetName });
+          }
         }
-        if (fallback.length === 0) {
-          throw new Error("Kon geen kolommen 'naam' en 'email' vinden, en kolom A/B levert ook niets op");
-        }
-        setPreview(fallback);
-        return;
       }
 
-      const out: Row[] = [];
-      for (let i = 1; i < rows.length; i++) {
-        const r = rows[i] as any[];
-        const name = String(r?.[nameIdx] ?? "").trim();
-        const email = String(r?.[emailIdx] ?? "").trim();
-        if (!name || !email) continue;
-        out.push({ name, email });
+      if (found.length === 0) {
+        throw new Error(
+          `Geen rijen met naam + email gevonden. Tabbladen gescand: ${sheetsScanned.join(", ") || "(geen)"}. Verwacht kolommen "naam" en "email", of een lijst waar email-adressen naast namen staan.`,
+        );
       }
-      if (out.length === 0) throw new Error("Geen geldige rijen gevonden");
-      setPreview(out);
+
+      // De-dupe op email
+      const seen = new Set<string>();
+      const unique: Row[] = [];
+      for (const f of found) {
+        const e = f.email.toLowerCase();
+        if (seen.has(e)) continue;
+        seen.add(e);
+        unique.push({ name: f.name, email: f.email });
+      }
+
+      setPreview(unique);
     } catch (err: any) {
       setError(err?.message ?? "Kon bestand niet lezen");
       setPreview(null);
