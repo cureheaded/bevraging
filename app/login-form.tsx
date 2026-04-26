@@ -24,7 +24,7 @@ export default function LoginForm() {
       setError(data?.error ?? "Inloggen mislukt");
       return;
     }
-    router.push("/bevraging");
+    router.push("/info");
     router.refresh();
   }
 
