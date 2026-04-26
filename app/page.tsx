@@ -6,7 +6,7 @@ export default async function Home() {
   const code = await getEmployeeSession();
   if (code) redirect("/bevraging");
   return (
-    <div className="login-page">
+    <div className="blurred-bg login-page">
       <div className="login-card">
         <div
           className="login-hero"

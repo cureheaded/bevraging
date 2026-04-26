@@ -88,32 +88,36 @@ th { background: #f0f2f5; font-weight: 600; }
 .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .row-actions button { padding: 6px 10px; font-size: 0.85rem; }
 
-/* Login pagina */
-.login-page {
+/* Wazig gebouw als achtergrond — herbruikbaar over pagina's */
+.blurred-bg {
   position: relative;
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  overflow: hidden;
+  overflow-x: hidden;
   isolation: isolate;
 }
-.login-page::before {
+.blurred-bg::before {
   content: "";
-  position: absolute;
+  position: fixed;
   /* extra ruimte zodat de blur-randen niet zichtbaar zijn */
   inset: -25px;
   background: url(/achtergrondlogin.png) center/cover no-repeat;
   filter: blur(10px) brightness(1.05) saturate(0.95);
   z-index: -2;
 }
-.login-page::after {
+.blurred-bg::after {
   content: "";
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgba(255, 255, 255, 0.4);
   z-index: -1;
+}
+
+/* Login pagina — gebruikt .blurred-bg + flex-centering */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
 }
 .login-card {
   position: relative;
