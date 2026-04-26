@@ -103,16 +103,16 @@ th { background: #f0f2f5; font-weight: 600; }
   content: "";
   position: absolute;
   /* extra ruimte zodat de blur-randen niet zichtbaar zijn */
-  inset: -40px;
+  inset: -25px;
   background: url(/achtergrondlogin.png) center/cover no-repeat;
-  filter: blur(28px) brightness(1.08) saturate(0.92);
+  filter: blur(10px) brightness(1.05) saturate(0.95);
   z-index: -2;
 }
 .login-page::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.4);
   z-index: -1;
 }
 .login-card {
