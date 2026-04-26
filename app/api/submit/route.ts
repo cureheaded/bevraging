@@ -38,7 +38,11 @@ export async function POST(req: Request) {
     );
 
   if (error) {
-    return NextResponse.json({ error: "Bewaren mislukt" }, { status: 500 });
+    console.error("[/api/submit] supabase error:", error);
+    return NextResponse.json(
+      { error: `Bewaren mislukt: ${error.message}` },
+      { status: 500 },
+    );
   }
 
   return NextResponse.json({ ok: true });

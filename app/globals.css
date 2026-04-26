@@ -90,20 +90,40 @@ th { background: #f0f2f5; font-weight: 600; }
 
 /* Login pagina */
 .login-page {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: linear-gradient(135deg, #eaf0fb 0%, #f5f6f8 60%);
+  overflow: hidden;
+  isolation: isolate;
+}
+.login-page::before {
+  content: "";
+  position: absolute;
+  /* extra ruimte zodat de blur-randen niet zichtbaar zijn */
+  inset: -40px;
+  background: url(/achtergrondlogin.png) center/cover no-repeat;
+  filter: blur(28px) brightness(1.08) saturate(0.92);
+  z-index: -2;
+}
+.login-page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.62);
+  z-index: -1;
 }
 .login-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: 480px;
   background: #fff;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 10px 40px rgba(20, 40, 90, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 20px 60px rgba(20, 40, 90, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 .login-hero {
   position: relative;
