@@ -114,7 +114,7 @@ export default function SurveyForm() {
       </div>
 
       <h2>3. Reeks-voorkeur</h2>
-      <p className="muted">Hoe liefst werk je je dagen aaneen?</p>
+      <p className="muted">Hoeveel dagen werk je liefst na elkaar?</p>
       <div className="radio-group">
         {[
           { v: "long_stretch", l: "Lange reeksen — 7 dagen werken en 2 of 3 dagen thuis" },
