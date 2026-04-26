@@ -87,3 +87,61 @@ th { background: #f0f2f5; font-weight: 600; }
 }
 .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .row-actions button { padding: 6px 10px; font-size: 0.85rem; }
+
+/* Login pagina */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: linear-gradient(135deg, #eaf0fb 0%, #f5f6f8 60%);
+}
+.login-card {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(20, 40, 90, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+.login-hero {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.login-hero-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px 24px;
+  background: linear-gradient(to top, rgba(0, 20, 50, 0.65) 0%, rgba(0, 20, 50, 0.15) 50%, rgba(0, 0, 0, 0) 100%);
+  color: #fff;
+}
+.login-hero-overlay h1 {
+  margin: 0 0 4px;
+  font-size: 1.5rem;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+.login-hero-overlay p {
+  margin: 0;
+  font-size: 0.92rem;
+  opacity: 0.95;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+.login-body {
+  padding: 24px;
+}
+.callout {
+  background: #fff8e1;
+  border-left: 4px solid #f5b400;
+  padding: 12px 14px;
+  border-radius: 6px;
+  margin: 14px 0 8px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
