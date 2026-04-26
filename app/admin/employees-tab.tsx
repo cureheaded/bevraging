@@ -77,6 +77,7 @@ export default function EmployeesTab({ origin }: { origin: string }) {
   const [list, setList] = useState<Employee[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [previewFor, setPreviewFor] = useState<Employee | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
 
   useEffect(() => {
     refresh();
@@ -107,12 +108,45 @@ export default function EmployeesTab({ origin }: { origin: string }) {
     refresh();
   }
 
-  function openMailto(e: Employee) {
+  async function openMailto(e: Employee) {
     const surveyUrl = `${origin}/`;
     const infoUrl = `${origin}/infoalgoritme.html`;
+    const html = buildEmailHtml(e, surveyUrl, infoUrl);
     const plain = buildEmailPlain(e, surveyUrl, infoUrl);
-    const url = `mailto:${e.email}?subject=${encodeURIComponent(SUBJECT)}&body=${encodeURIComponent(plain)}`;
-    window.location.href = url;
+
+    // Kopieer HTML naar klembord zodat plakken in je mailprogramma de opmaak behoudt
+    let copied = false;
+    try {
+      if (navigator.clipboard && typeof (window as any).ClipboardItem === "function") {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            "text/html": new Blob([html], { type: "text/html" }),
+            "text/plain": new Blob([plain], { type: "text/plain" }),
+          }),
+        ]);
+        copied = true;
+      }
+    } catch (err) {
+      console.error("Clipboard error", err);
+    }
+
+    if (copied) {
+      setStatus(
+        `Mail-inhoud gekopieerd. Plak (Ctrl+V) in het bericht-veld van het mailprogramma dat zo opent.`,
+      );
+      // Open lege mailto met enkel onderwerp + ontvanger; gebruiker plakt HTML in
+      const url = `mailto:${e.email}?subject=${encodeURIComponent(SUBJECT)}`;
+      window.location.href = url;
+    } else {
+      // Fallback: kon niet kopiëren — geef plain text mee in de body
+      setStatus(
+        `Klembord niet beschikbaar — mailprogramma opent met plain-text versie.`,
+      );
+      const url = `mailto:${e.email}?subject=${encodeURIComponent(SUBJECT)}&body=${encodeURIComponent(plain)}`;
+      window.location.href = url;
+    }
+
+    setTimeout(() => setStatus(null), 8000);
     setTimeout(() => markSent(e.id, true), 400);
   }
 
@@ -145,7 +179,12 @@ export default function EmployeesTab({ origin }: { origin: string }) {
       </p>
       <p className="muted" style={{ fontSize: "0.88rem" }}>
         Onderwerp: <code>{SUBJECT}</code> · Voornaam wordt het laatste woord uit de naam-kolom.
+        Klik op <strong>Mail openen</strong>: de HTML-inhoud gaat naar je klembord en je
+        standaard mailprogramma opent met onderwerp en ontvanger ingevuld — plak met Ctrl+V
+        in het bericht-veld.
       </p>
+
+      {status && <div className="success">{status}</div>}
 
       <table>
         <thead>
