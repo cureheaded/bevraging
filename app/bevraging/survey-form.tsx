@@ -194,7 +194,7 @@ export default function SurveyForm() {
       </div>
 
       <h2>6. Opmerkingen</h2>
-      <p className="muted">Iets dat we moeten weten? Bv. kinderopvang op specifieke dagen, vaste afspraken, ...</p>
+      <p className="muted">Wil je nog iets melden dat niet in de bevraging werd opgenomen?</p>
       <textarea
         value={a.comments ?? ""}
         onChange={(e) => setA({ ...a, comments: e.target.value })}
