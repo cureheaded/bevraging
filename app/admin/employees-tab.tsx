@@ -77,7 +77,6 @@ export default function EmployeesTab({ origin }: { origin: string }) {
   const [list, setList] = useState<Employee[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [previewFor, setPreviewFor] = useState<Employee | null>(null);
-  const [copyStatus, setCopyStatus] = useState<string | null>(null);
 
   useEffect(() => {
     refresh();
@@ -106,42 +105,6 @@ export default function EmployeesTab({ origin }: { origin: string }) {
     if (!confirm(`Medewerker "${name}" verwijderen? Diens antwoorden worden ook gewist.`)) return;
     await fetch(`/api/admin/employees?id=${id}`, { method: "DELETE" });
     refresh();
-  }
-
-  async function openInGmail(e: Employee) {
-    const surveyUrl = `${origin}/`;
-    const infoUrl = `${origin}/infoalgoritme.html`;
-    const html = buildEmailHtml(e, surveyUrl, infoUrl);
-    const plain = buildEmailPlain(e, surveyUrl, infoUrl);
-
-    // Kopieer als rich text (HTML) zodat plakken in Gmail de opmaak behoudt
-    let copied = false;
-    try {
-      if (navigator.clipboard && (window as any).ClipboardItem) {
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            "text/html": new Blob([html], { type: "text/html" }),
-            "text/plain": new Blob([plain], { type: "text/plain" }),
-          }),
-        ]);
-        copied = true;
-      } else if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(plain);
-        copied = true;
-      }
-    } catch (err) {
-      console.error("Clipboard error", err);
-    }
-
-    setCopyStatus(copied
-      ? `Mail gekopieerd. Plak (Ctrl+V) in het bericht-veld in Gmail.`
-      : `Kopiëren mislukt — gebruik de "Toon HTML"-knop en kopieer manueel.`);
-    setTimeout(() => setCopyStatus(null), 6000);
-
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(e.email)}&su=${encodeURIComponent(SUBJECT)}`;
-    window.open(gmailUrl, "_blank", "noopener,noreferrer");
-
-    setTimeout(() => markSent(e.id, true), 400);
   }
 
   function openMailto(e: Employee) {
@@ -184,8 +147,6 @@ export default function EmployeesTab({ origin }: { origin: string }) {
         Onderwerp: <code>{SUBJECT}</code> · Voornaam wordt het laatste woord uit de naam-kolom.
       </p>
 
-      {copyStatus && <div className="success">{copyStatus}</div>}
-
       <table>
         <thead>
           <tr>
@@ -220,14 +181,11 @@ export default function EmployeesTab({ origin }: { origin: string }) {
                 )}
               </td>
               <td className="row-actions">
-                <button onClick={() => openInGmail(e)} title="Kopieert HTML naar klembord en opent Gmail compose">
-                  Open in Gmail
+                <button onClick={() => openMailto(e)} title="Open standaard mailprogramma met onderwerp + bericht ingevuld">
+                  Mail openen
                 </button>
-                <button className="secondary" onClick={() => setPreviewFor(e)} title="Toon de HTML-mail">
+                <button className="secondary" onClick={() => setPreviewFor(e)} title="Toon hoe de mail eruit ziet">
                   Voorbeeld
-                </button>
-                <button className="secondary" onClick={() => openMailto(e)} title="Open standaard mailprogramma (plain text)">
-                  Mailto
                 </button>
                 {e.mail_sent_at && (
                   <button className="secondary" onClick={() => markSent(e.id, false)} title="Reset mail-status">
@@ -269,11 +227,8 @@ export default function EmployeesTab({ origin }: { origin: string }) {
               dangerouslySetInnerHTML={{ __html: buildEmailHtml(previewFor, surveyUrl, infoUrl) }}
             />
             <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-              <button onClick={() => { openInGmail(previewFor); setPreviewFor(null); }}>
-                Open in Gmail
-              </button>
-              <button className="secondary" onClick={() => { openMailto(previewFor); setPreviewFor(null); }}>
-                Mailto (plain text)
+              <button onClick={() => { openMailto(previewFor); setPreviewFor(null); }}>
+                Mail openen
               </button>
             </div>
           </div>
