@@ -8,7 +8,7 @@ function validate(a: any): a is SurveyAnswers {
   if (!Array.isArray(a.floorMustAvoid)) return false;
   if (!["long_stretch", "short_stretch", "no_preference", "other"].includes(a.scheduleStyle)) return false;
   if (!["early", "late", "mix", "no_preference"].includes(a.shiftPreference)) return false;
-  if (!["as_few_as_possible", "no_preference", "extra_ok"].includes(a.weekendsPerMonth)) return false;
+  if (!["standard", "more_weekends"].includes(a.weekendsPerMonth)) return false;
   return true;
 }
 

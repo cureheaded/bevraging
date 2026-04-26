@@ -13,7 +13,7 @@ type Response = {
 };
 
 const SCHEDULE_LABELS: Record<string, string> = {
-  long_stretch: "Lange reeksen (6+2)",
+  long_stretch: "Lange reeksen (7 + 2/3)",
   short_stretch: "Kortere reeksen (3-4 + 1)",
   no_preference: "Geen voorkeur",
   other: "Andere",
@@ -25,9 +25,8 @@ const SHIFT_LABELS: Record<string, string> = {
   no_preference: "Geen voorkeur",
 };
 const WEEKEND_LABELS: Record<string, string> = {
-  as_few_as_possible: "Zo weinig mogelijk",
-  no_preference: "Geen voorkeur",
-  extra_ok: "Extra mag",
+  standard: "Zoals nu (1 op 2)",
+  more_weekends: "Extra weekends, meer thuis in week",
 };
 
 export default function ResponsesTab() {

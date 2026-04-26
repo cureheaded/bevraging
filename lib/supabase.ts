@@ -36,6 +36,6 @@ export type SurveyAnswers = {
   scheduleStyle: "long_stretch" | "short_stretch" | "no_preference" | "other";
   scheduleStyleOther?: string;
   shiftPreference: "early" | "late" | "mix" | "no_preference";
-  weekendsPerMonth: "as_few_as_possible" | "no_preference" | "extra_ok";
+  weekendsPerMonth: "standard" | "more_weekends";
   comments?: string;
 };

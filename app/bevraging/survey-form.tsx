@@ -12,7 +12,7 @@ const EMPTY: SurveyAnswers = {
   scheduleStyle: "no_preference",
   scheduleStyleOther: "",
   shiftPreference: "no_preference",
-  weekendsPerMonth: "no_preference",
+  weekendsPerMonth: "standard",
   comments: "",
 };
 
@@ -117,7 +117,7 @@ export default function SurveyForm() {
       <p className="muted">Hoe liefst werk je je dagen aaneen?</p>
       <div className="radio-group">
         {[
-          { v: "long_stretch", l: "Lange reeksen — bv. 6 dagen werk + minimum 2 dagen thuis" },
+          { v: "long_stretch", l: "Lange reeksen — 7 dagen werken en 2 of 3 dagen thuis" },
           { v: "short_stretch", l: "Kortere reeksen — bv. 3 of 4 dagen werk + 1 dag thuis" },
           { v: "no_preference", l: "Geen voorkeur" },
           { v: "other", l: "Andere (zie opmerkingen)" },
@@ -175,9 +175,8 @@ export default function SurveyForm() {
       <h2>5. Weekends</h2>
       <div className="radio-group">
         {[
-          { v: "as_few_as_possible", l: "Liefst zo weinig mogelijk weekendwerk" },
-          { v: "no_preference", l: "Geen specifieke voorkeur" },
-          { v: "extra_ok", l: "Extra weekends mogen, ik werk ze graag" },
+          { v: "standard", l: "Zoals nu — 1 weekend op 2" },
+          { v: "more_weekends", l: "Ik werk graag extra weekends en heb dan meer thuis tijdens de week" },
         ].map((opt) => {
           const sel = a.weekendsPerMonth === opt.v;
           return (
