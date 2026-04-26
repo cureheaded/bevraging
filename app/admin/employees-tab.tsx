@@ -108,45 +108,71 @@ export default function EmployeesTab({ origin }: { origin: string }) {
     refresh();
   }
 
+  function copyHtmlToClipboard(html: string, plain: string): boolean {
+    // execCommand-aanpak: selecteer een verborgen HTML-element en kopieer.
+    // Dit behoudt rich text (HTML) in het klembord op een manier die Outlook,
+    // Apple Mail, Thunderbird en Gmail allemaal correct herkennen bij Ctrl+V.
+    const div = document.createElement("div");
+    div.contentEditable = "true";
+    div.innerHTML = html;
+    div.style.position = "fixed";
+    div.style.top = "-9999px";
+    div.style.left = "-9999px";
+    div.style.opacity = "0";
+    document.body.appendChild(div);
+
+    const range = document.createRange();
+    range.selectNodeContents(div);
+    const sel = window.getSelection();
+    if (!sel) {
+      document.body.removeChild(div);
+      return false;
+    }
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    let ok = false;
+    try {
+      ok = document.execCommand("copy");
+    } catch {
+      ok = false;
+    }
+    sel.removeAllRanges();
+    document.body.removeChild(div);
+
+    // Voeg ook moderne async-API toe als extra zekerheid (sommige browsers verkiezen die)
+    if (navigator.clipboard && typeof (window as any).ClipboardItem === "function") {
+      navigator.clipboard
+        .write([
+          new ClipboardItem({
+            "text/html": new Blob([html], { type: "text/html" }),
+            "text/plain": new Blob([plain], { type: "text/plain" }),
+          }),
+        ])
+        .catch(() => {});
+    }
+    return ok;
+  }
+
   async function openMailto(e: Employee) {
     const surveyUrl = `${origin}/`;
     const infoUrl = `${origin}/infoalgoritme.html`;
     const html = buildEmailHtml(e, surveyUrl, infoUrl);
     const plain = buildEmailPlain(e, surveyUrl, infoUrl);
 
-    // Kopieer HTML naar klembord zodat plakken in je mailprogramma de opmaak behoudt
-    let copied = false;
-    try {
-      if (navigator.clipboard && typeof (window as any).ClipboardItem === "function") {
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            "text/html": new Blob([html], { type: "text/html" }),
-            "text/plain": new Blob([plain], { type: "text/plain" }),
-          }),
-        ]);
-        copied = true;
-      }
-    } catch (err) {
-      console.error("Clipboard error", err);
-    }
+    const copied = copyHtmlToClipboard(html, plain);
 
-    if (copied) {
-      setStatus(
-        `Mail-inhoud gekopieerd. Plak (Ctrl+V) in het bericht-veld van het mailprogramma dat zo opent.`,
-      );
-      // Open lege mailto met enkel onderwerp + ontvanger; gebruiker plakt HTML in
-      const url = `mailto:${e.email}?subject=${encodeURIComponent(SUBJECT)}`;
-      window.location.href = url;
-    } else {
-      // Fallback: kon niet kopiëren — geef plain text mee in de body
-      setStatus(
-        `Klembord niet beschikbaar — mailprogramma opent met plain-text versie.`,
-      );
-      const url = `mailto:${e.email}?subject=${encodeURIComponent(SUBJECT)}&body=${encodeURIComponent(plain)}`;
-      window.location.href = url;
-    }
+    setStatus(
+      copied
+        ? "Mail-inhoud (HTML) staat op je klembord. Plak met Ctrl+V in het bericht-veld van het mailprogramma dat zo opent. Als er al tekst staat (bv. handtekening) — klik bovenaan in het bericht en plak."
+        : "Klembord-toegang geweigerd door je browser. Open de Voorbeeld-knop, selecteer de mail en kopieer manueel met Ctrl+C.",
+    );
 
-    setTimeout(() => setStatus(null), 8000);
+    // Lege mailto: enkel ontvanger + onderwerp, geen body — zo plakt de gebruiker in een schoon veld
+    const url = `mailto:${e.email}?subject=${encodeURIComponent(SUBJECT)}`;
+    window.location.href = url;
+
+    setTimeout(() => setStatus(null), 12000);
     setTimeout(() => markSent(e.id, true), 400);
   }
 
@@ -265,9 +291,21 @@ export default function EmployeesTab({ origin }: { origin: string }) {
               style={{ border: "1px solid #e3e6ea", borderRadius: 6, padding: 16, background: "#fafbfc" }}
               dangerouslySetInnerHTML={{ __html: buildEmailHtml(previewFor, surveyUrl, infoUrl) }}
             />
-            <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+            <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
               <button onClick={() => { openMailto(previewFor); setPreviewFor(null); }}>
                 Mail openen
+              </button>
+              <button
+                className="secondary"
+                onClick={() => {
+                  const html = buildEmailHtml(previewFor, surveyUrl, infoUrl);
+                  const plain = buildEmailPlain(previewFor, surveyUrl, infoUrl);
+                  const ok = copyHtmlToClipboard(html, plain);
+                  setStatus(ok ? "HTML gekopieerd naar klembord." : "Kopiëren mislukt.");
+                  setTimeout(() => setStatus(null), 6000);
+                }}
+              >
+                Kopieer HTML
               </button>
             </div>
           </div>
